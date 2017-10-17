@@ -1,0 +1,118 @@
+--- pvecm_status	2017-10-17 15:19:31.000000000 +0100
++++ pvecm_status.new	2017-10-17 15:39:23.000000000 +0100
+@@ -26,50 +26,56 @@
+ 
+ 
+ # healthy
+-# <<<pvecm_status:sep(58)>>>
+-# Version: 6.2.0
+-# Config Version: 35
+-# status Id: 27764
+-# status Member: Yes
+-# status Generation: 36032
+-# Membership state: status-Member
+-# Nodes: 7
+-# Expected votes: 7
+-# Total votes: 7
+-# Node votes: 1
+-# Quorum: 4
+-# Active subsystems: 1
+-# Flags:
+-# Ports Bound: 0
+-# Node name: host-FOO
+-# Node ID: 5
+-# Multicast addresses: aaa.bbb.ccc.ddd
+-# Node addresses: nnn.mmm.ooo.ppp
++#<<<pvecm_status:sep(58)>>>
++#Quorum information
++#------------------
++#Date:             Tue Oct 17 15:28:42 2017
++#Quorum provider:  corosync_votequorum
++#Nodes:            2
++#Node ID:          0x00000001
++#Ring ID:          1/32
++#Quorate:          Yes
++#
++#Votequorum information
++#----------------------
++#Expected votes:   2
++#Highest expected: 2
++#Total votes:      2
++#Quorum:           2  
++#Flags:            Quorate 
++#
++#Membership information
++#----------------------
++#    Nodeid      Votes Name
++#    0x00000001          1 192.168.10.1 (local)
++#    0x00000002          1 192.168.10.2
+ 
+ # with problems:
+ # <<<pvecm_status:sep(58)>>>
+ # cman_tool: Cannot open connection to cman, is it running?
+ 
+ # <<<pvecm_status:sep(58)>>>
+-# Version: 6.2.0
+-# Config Version: 2
+-# status Id: 4921
+-# status Member: Yes
+-# status Generation: 280
+-# Membership state: status-Member
+-# Nodes: 1
+-# Expected votes: 2
+-# Total votes: 1
+-# Node votes: 1
+-# Quorum: 2 Activity blocked
+-# Active subsystems: 5
+-# Flags:
+-# Ports Bound: 0
+-# Node name: host-FOO
+-# Node ID: 1
+-# Multicast addresses: aaa.bbb.ccc.ddd
+-# Node addresses: nnn.mmm.ooo.ppp
+-
++#Quorum information
++#------------------
++#Date:             Tue Oct 17 15:36:50 2017
++#Quorum provider:  corosync_votequorum
++#Nodes:            1
++#Node ID:          0x00000001
++#Ring ID:          1/36
++#Quorate:          No
++#
++#Votequorum information
++#----------------------
++#Expected votes:   2
++#Highest expected: 2
++#Total votes:      1
++#Quorum:           2 Activity blocked
++#Flags:            
++#
++#Membership information
++#----------------------
++#    Nodeid      Votes Name
++#    0x00000001          1 192.168.10.1 (local)
+ 
+ def inventory_pvecm_status(info):
+     return [(None, None)]
+@@ -77,16 +83,16 @@
+ 
+ def check_pvecm_status(_no_item, _no_params, info):
+     parsed = {}
+-    for what, value in info:
+-        parsed[what.lower()] = value.strip().lower()
++    for line in info:
++        if len(line) > 1:
++           parsed[line[0].lower()] = line[1].strip().lower()
+ 
+     if "cman_tool" in parsed and \
+        "cannot open connection to cman" in parsed["cman_tool"]:
+         yield 2, "Cluster management tool: %s" % parsed["cman_tool"]
+ 
+     else:
+-        yield 0, "Name: %s, Nodes: %s" % \
+-                 (parsed["cluster name"], parsed["nodes"])
++        yield 0, "Nodes: %s" % parsed["nodes"]
+ 
+         if "activity blocked" in parsed["quorum"]:
+             yield 2, "Quorum: %s" % parsed["quorum"]
